@@ -1,0 +1,27 @@
+name: "Deploy to S3"
+description: "Deploys to s3 bucket, it assumes a smile IAM role. Must be run on internal runners with the `category-applications` label."
+inputs:
+  iam_role_arn:
+    description: "IAM arn role for assuming role."
+    required: true
+  s3_bucket:
+    description: "S3 bucket were the assets will be uploaded"
+    required: true
+  source_path:
+    description: "Resources path to upload to s3"
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Assume IAM Role
+      shell: bash
+      run: |
+      export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
+        $(aws sts assume-role \
+        --role-arn ${{ inputs.iam_role_arn }} \
+        --role-session-name AWSCLI-Session \
+        --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
+        --output text))
+    - name: Push files to S3 bucket
+      shell: bash
+      run: aws s3 cp ${{ inputs.source_path }} --recursive s3://${{ inputs.s3_bucket }}
