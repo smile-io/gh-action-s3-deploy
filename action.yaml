@@ -1,9 +1,6 @@
 name: "Deploy to S3"
 description: "Deploys to s3 bucket, it assumes a smile IAM role. Must be run on internal runners with the `category-applications` label."
 inputs:
-  iam_role_arn:
-    description: "IAM arn role for assuming role."
-    required: true
   s3_bucket:
     description: "S3 bucket were the assets will be uploaded"
     required: true
