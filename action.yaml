@@ -10,6 +10,13 @@ inputs:
   source_path:
     description: "Resources path to upload to s3"
     required: true
+  short_environment:
+    description: "Environment short-form as used in Smile's infrastructure-live repo. One of `dev`, `stage`, `prod`"
+    required: true
+  release_version:
+    description: "The new release version of assets that should be deployed."
+    required: true
+
 runs:
   using: composite
   steps:
@@ -18,8 +25,8 @@ runs:
       run: |
         export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
           $(aws sts assume-role \
-          --role-arn ${{ inputs.iam_role_arn }} \
+          --role-arn "arn:aws:iam::${{ fromJson('{"dev": "307739032832", "stage": "389299793054", "prod": "964498696771"}')[inputs.short_environment] }}:role/allow-auto-deploy-from-other-accounts" \
           --role-session-name AWSCLI-Session \
           --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
           --output text))
-        aws s3 cp ${{ inputs.source_path }} s3://${{ inputs.s3_bucket }} --recursive
+        aws s3 cp ${{ inputs.source_path }} s3://${{ inputs.s3_bucket }}/${{ inputs.release_version }} --recursive
