@@ -13,6 +13,9 @@ inputs:
   release_version:
     description: "The new release version of assets that should be deployed."
     required: true
+  additional_args:
+    description: "Additional args to be passed through, for example cache controls."
+    required: false
 
 runs:
   using: composite
@@ -26,4 +29,4 @@ runs:
           --role-session-name AWSCLI-Session \
           --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
           --output text))
-        aws s3 cp ${{ inputs.source_path }} s3://${{ inputs.s3_bucket }}/${{ inputs.release_version }} --recursive
+        aws s3 cp ${{ inputs.source_path }} s3://${{ inputs.s3_bucket }}/${{ inputs.release_version }} --recursive ${{ inputs.additional_args }}
